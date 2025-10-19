@@ -2,18 +2,18 @@ from utils import config
 from utils.splash_screen import SplashScreen
 from reports.relatorios import Relatorio
 from controller.controller_produto import Controller_Produto
-from controller.controller_cliente import Controller_Cliente
 from controller.controller_fornecedor import Controller_Fornecedor
-from controller.controller_pedido import Controller_Pedido
-from controller.controller_item_pedido import Controller_Item_Pedido
+from controller.controller_categoria import Controller_Categoria
+from controller.controller_localizacao import Controller_Localizacao
+from controller.controller_movimentacao import Controller_Movimentacao
 
 tela_inicial = SplashScreen()
 relatorio = Relatorio()
 ctrl_produto = Controller_Produto()
-ctrl_cliente = Controller_Cliente()
 ctrl_fornecedor = Controller_Fornecedor()
-ctrl_pedido = Controller_Pedido()
-ctrl_item_pedido = Controller_Item_Pedido()
+ctrl_categoria = Controller_Categoria()
+ctrl_localizacao = Controller_Localizacao()
+ctrl_movimentacao = Controller_Movimentacao()
 
 def reports(opcao_relatorio:int=0):
 

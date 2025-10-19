@@ -28,27 +28,41 @@ def generate_records(query:str, sep:str=';'):
             print("Successfully executed")
 
 def run():
-
-    with open("../sql/create_tables_pedidos.sql") as f:
+    # Criar tabelas
+    print("Criando tabelas...")
+    
+    # Criar tabela de Categorias
+    with open("../sql/create_tables_categorias.sql") as f:
         query_create = f.read()
+        create_tables(query=query_create)
+    print("Tabela de Categorias criada!")
 
-    print("Creating tables...")
-    create_tables(query=query_create)
-    print("Tables successfully created!")
+    # Criar tabela de Localizações
+    with open("../sql/create_tables_localizacoes.sql") as f:
+        query_create = f.read()
+        create_tables(query=query_create)
+    print("Tabela de Localizações criada!")
 
+    # Criar tabela de Produtos
+    with open("../sql/create_tables_produtos.sql") as f:
+        query_create = f.read()
+        create_tables(query=query_create)
+    print("Tabela de Produtos criada!")
+
+    # Criar tabela de Movimentações
+    with open("../sql/create_tables_movimentacoes.sql") as f:
+        query_create = f.read()
+        create_tables(query=query_create)
+    print("Tabela de Movimentações criada!")
+
+    print("Todas as tabelas foram criadas com sucesso!")
+
+    # Inserir dados de exemplo
+    print("Inserindo dados de exemplo...")
     with open("../sql/inserting_samples_records.sql") as f:
         query_generate_records = f.read()
-
-    print("Gerenating records")
-    generate_records(query=query_generate_records)
-    print("Records successfully generated!")
-
-    with open("../sql/inserting_samples_related_records.sql") as f:
-        query_generate_related_records = f.read()
-
-    print("Gerenating records")
-    generate_records(query=query_generate_related_records, sep='--')
-    print("Records successfully generated!")
+        generate_records(query=query_generate_records)
+    print("Dados de exemplo inseridos com sucesso!")
 
 if __name__ == '__main__':
     run()
