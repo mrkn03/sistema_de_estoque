@@ -124,6 +124,93 @@ Para que possa testar as conexões com o banco de dados Oracle e o módulo Conex
   export PATH
   ```
 
+## Passo a Passo para Executar o Projeto
+
+### 1. Pré-requisitos
+- Oracle Database instalado (ou container Docker com Oracle)
+- Python instalado
+- Git (para clonar o repositório)
+
+### 2. Configuração do Ambiente
+1. Clone o repositório:
+   ```shell
+   git clone https://github.com/mrkn03/sistema_de_estoque.git
+   cd sistema_de_estoque
+   ```
+
+2. Crie e ative um ambiente virtual Python:
+   ```shell
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/Mac
+   # ou
+   .venv\Scripts\activate  # Windows
+   ```
+
+3. Instale as dependências:
+   ```shell
+   pip install -r src/requirements.txt
+   ```
+
+### 3. Configuração do Oracle InstantClient
+1. Baixe o Oracle InstantClient compatível com sua versão do Oracle
+2. Para distribuições Linux baseadas em Debian, converta o pacote RPM:
+   ```shell
+   sudo alien --scripts oracle-instantclient18.5-basic-18.5.0.0.0-3.x86_64.rpm
+   ```
+3. Configure os diretórios:
+   ```shell
+   sudo mkdir -p /usr/local/oracle/instantclient_18_5
+   sudo cp -r /usr/lib/oracle/21 /usr/local/oracle/instantclient_18_5/lib
+   sudo cp -r /usr/share/oracle/21 /usr/local/oracle/instantclient_18_5/share
+   ```
+4. Configure as variáveis de ambiente no ~/.bash_profile:
+   ```shell
+   export ORACLE_HOME=/usr/local/oracle/instantclient_18_5/lib/oracle/21/client64
+   export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+   export PATH=$PATH:$ORACLE_HOME/bin
+   export PATH
+   ```
+5. Aplique as alterações:
+   ```shell
+   source ~/.bash_profile
+   ```
+
+### 4. Configuração do Banco de Dados Oracle
+1. Inicie o servidor Oracle (ou container Docker)
+2. Acesse o SQL*Plus como administrador:
+   ```shell
+   sqlplus / as sysdba
+   ```
+3. Configure o usuário e privilégios:
+   ```sql
+   ALTER SESSION SET CONTAINER = XEPDB1;
+   ALTER PROFILE DEFAULT LIMIT PASSWORD_LIFE_TIME UNLIMITED;
+   GRANT ALL PRIVILEGES TO labdatabase;
+   ALTER USER labdatabase IDENTIFIED BY "labDatabase2022";
+   ```
+
+### 5. Configuração do Projeto
+1. Se estiver usando Docker ou máquina virtual, ajuste o arquivo `src/conexion/oracle_queries.py` para usar `in_container=True`
+2. Verifique se o arquivo de autenticação está correto em `src/conexion/passphrase/authentication.oracle`
+   - Deve conter: `labdatabase,labDatabase2022`
+
+### 6. Execução do Sistema
+1. Crie as tabelas e dados de exemplo:
+   ```shell
+   cd src
+   python create_tables_and_records.py
+   ```
+2. Execute o programa principal:
+   ```shell
+   python principal.py
+   ```
+
+### 7. Testes (Opcional)
+Para testar a conexão com o banco de dados:
+```shell
+python test.py
+```
+
 ## Contato
 - [LinkedIn](https://linkedin.com/in/howardroatti)
 - [E-Mail](mailto:howardcruzroatti@gmail.com)
