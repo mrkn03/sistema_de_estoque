@@ -13,10 +13,10 @@ class SplashScreen:
         # Consultas de contagem de registros - fim
 
         # Nome(s) do(s) criador(es)
-        self.created_by = "Howard Roatti"
+        self.created_by = "Marcos Fernandes, Rafael Pim, Miguel Amm"
         self.professor = "Prof. M.Sc. Howard Roatti"
         self.disciplina = "Banco de Dados"
-        self.semestre = "2022/2"
+        self.semestre = "2025/2"
 
     def get_total_produtos(self):
         # Cria uma nova conexão com o banco que permite alteração
@@ -54,22 +54,23 @@ class SplashScreen:
         return oracle.sqlToDataFrame(self.qry_total_itens_pedido)["total_itens_pedido"].values[0]
 
     def get_updated_screen(self):
+        total_width = 79
         return f"""
-        ########################################################
-        #                   SISTEMA DE VENDAS                     
-        #                                                         
-        #  TOTAL DE REGISTROS:                                    
-        #      1 - PRODUTOS:         {str(self.get_total_produtos()).rjust(5)}
-        #      2 - CLIENTES:         {str(self.get_total_clientes()).rjust(5)}
-        #      3 - FORNECEDORES:     {str(self.get_total_fornecedores()).rjust(5)}
-        #      4 - PEDIDOS:          {str(self.get_total_pedidos()).rjust(5)}
-        #      5 - ITENS DE PEDIDOS: {str(self.get_total_itens_pedidos()).rjust(5)}
-        #
-        #  CRIADO POR: {self.created_by}
-        #
-        #  PROFESSOR:  {self.professor}
-        #
-        #  DISCIPLINA: {self.disciplina}
-        #              {self.semestre}
-        ########################################################
+{'#' * total_width}
+#{' SISTEMA DE VENDAS '.center(total_width-2)}#
+#{''.center(total_width-2)}#
+#{'TOTAL DE REGISTROS:'.center(total_width-2)}#
+#{f'1 - PRODUTOS:         {str(self.get_total_produtos()).rjust(5)}'.center(total_width-2)}#
+#{f'2 - CLIENTES:         {str(self.get_total_clientes()).rjust(5)}'.center(total_width-2)}#
+#{f'3 - FORNECEDORES:     {str(self.get_total_fornecedores()).rjust(5)}'.center(total_width-2)}#
+#{f'4 - PEDIDOS:          {str(self.get_total_pedidos()).rjust(5)}'.center(total_width-2)}#
+#{f'5 - ITENS DE PEDIDOS: {str(self.get_total_itens_pedidos()).rjust(5)}'.center(total_width-2)}#
+#{''.center(total_width-2)}#
+#{f'CRIADO POR: {self.created_by}'.center(total_width-2)}#
+#{''.center(total_width-2)}#
+#{f'PROFESSOR: {self.professor}'.center(total_width-2)}#
+#{''.center(total_width-2)}#
+#{f'DISCIPLINA: {self.disciplina}'.center(total_width-2)}#
+#{self.semestre.center(total_width-2)}#
+{'#' * total_width}
         """
