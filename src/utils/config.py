@@ -22,6 +22,8 @@ MENU_ENTIDADES = """Entidades
 2 - CATEGORIAS
 3 - FORNECEDORES
 4 - LOCALIZAÇÕES
+5 - MOVIMENTAÇÕES
+0 - Voltar
 """
 
 MENU_MOVIMENTACAO = """Movimentação de Estoque
