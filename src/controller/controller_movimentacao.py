@@ -8,7 +8,7 @@ class Controller_Movimentacao:
         
     def verifica_existencia_movimentacao(self, oracle: OracleQueries, codigo: int) -> bool:
         """Verifica se uma movimentação existe no banco de dados"""
-        return not oracle.sqlToDataFrame(f"select 1 from movimentacoes where codigo = {codigo}").empty
+        return not oracle.sqlToDataFrame(f"select 1 from movimentacoes where codigo_movimentacao = {codigo}").empty
 
     def registrar_entrada(self) -> Movimentacao:
         '''Registra uma entrada de produto no estoque'''
@@ -16,23 +16,23 @@ class Controller_Movimentacao:
         oracle.connect()
 
         # Gera novo código de movimentação
-        codigo = oracle.sqlToDataFrame("select nvl(max(codigo), 0) + 1 as codigo from movimentacoes")["codigo"].values[0]
+        codigo = oracle.sqlToDataFrame("select nvl(max(codigo_movimentacao), 0) + 1 as codigo from movimentacoes")["codigo"].values[0]
         
         # Lista produtos disponíveis
         print("\nProdutos disponíveis:")
         df_produtos = oracle.sqlToDataFrame("""
-            select p.codigo, p.descricao_produto, p.quantidade_atual, 
+            select p.codigo_produto, p.descricao_produto, p.quantidade_atual, 
                    c.nome_categoria, l.nome_localizacao
             from produtos p
-            join categorias c on p.codigo_categoria = c.codigo
-            join localizacoes l on p.codigo_localizacao = l.codigo
-            order by p.codigo""")
+            join categorias c on p.codigo_categoria = c.codigo_categoria
+            join localizacoes l on p.codigo_localizacao = l.codigo_localizacao
+            order by p.codigo_produto""")
         print(df_produtos)
         
         codigo_produto = int(input("\nCódigo do Produto: "))
         
         # Verifica se o produto existe
-        if oracle.sqlToDataFrame(f"select 1 from produtos where codigo = {codigo_produto}").empty:
+        if oracle.sqlToDataFrame(f"select 1 from produtos where codigo_produto = {codigo_produto}").empty:
             print("Produto não encontrado!")
             return None
             
@@ -40,13 +40,13 @@ class Controller_Movimentacao:
         
         # Lista fornecedores disponíveis
         print("\nFornecedores disponíveis:")
-        df_fornecedores = oracle.sqlToDataFrame("select cnpj, razao_social from fornecedores order by razao_social")
+        df_fornecedores = oracle.sqlToDataFrame("select cnpj_fornecedor, razao_social from fornecedores order by razao_social")
         print(df_fornecedores)
         
         cnpj_fornecedor = input("\nCNPJ do Fornecedor: ")
         
         # Verifica se o fornecedor existe
-        if oracle.sqlToDataFrame(f"select 1 from fornecedores where cnpj = '{cnpj_fornecedor}'").empty:
+        if oracle.sqlToDataFrame(f"select 1 from fornecedores where cnpj_fornecedor = '{cnpj_fornecedor}'").empty:
             print("Fornecedor não encontrado!")
             return None
             
@@ -54,23 +54,17 @@ class Controller_Movimentacao:
         motivo = input("Motivo: ")
         
         # Registra a movimentação
-        oracle.write(f"""insert into movimentacoes values 
-                    ({codigo}, {codigo_produto}, 'E', {quantidade}, 
-                    TO_DATE('{datetime.now().strftime("%d/%m/%Y")}', 'DD/MM/YYYY'),
-                    '{cnpj_fornecedor}', '{motivo}', '{numero_nota}')""")
+        oracle.write(f"insert into movimentacoes values ({codigo}, {codigo_produto}, 'E', {quantidade}, TO_DATE('{datetime.now().strftime('%d/%m/%Y')}', 'DD/MM/YYYY'), '{cnpj_fornecedor}', '{motivo}', '{numero_nota}')")
         
         # Atualiza o estoque
-        oracle.write(f"""update produtos set 
-                    quantidade_atual = quantidade_atual + {quantidade},
-                    data_ultima_movimentacao = TO_DATE('{datetime.now().strftime("%d/%m/%Y")}', 'DD/MM/YYYY')
-                    where codigo = {codigo_produto}""")
+        oracle.write(f"update produtos set quantidade_atual = quantidade_atual + {quantidade}, data_ultima_movimentacao = TO_DATE('{datetime.now().strftime('%d/%m/%Y')}', 'DD/MM/YYYY') where codigo_produto = {codigo_produto}")
                     
         # Recupera os dados da movimentação
-        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo = {codigo}")
+        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo_movimentacao = {codigo}")
         
         # Cria e retorna o objeto Movimentacao
         nova_movimentacao = Movimentacao(
-            df_movimentacao.codigo.values[0],
+            df_movimentacao.codigo_movimentacao.values[0],
             df_movimentacao.codigo_produto.values[0],
             df_movimentacao.tipo_movimentacao.values[0],
             df_movimentacao.quantidade.values[0],
@@ -95,7 +89,7 @@ class Controller_Movimentacao:
             raise Exception("Movimentação não encontrada!")
             
         # Recupera os dados atuais da movimentação    
-        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo = {codigo_movimentacao}")
+        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo_movimentacao = {codigo_movimentacao}")
         tipo_movimentacao = df_movimentacao.tipo_movimentacao.values[0]
         quantidade_antiga = df_movimentacao.quantidade.values[0]
         codigo_produto = df_movimentacao.codigo_produto.values[0]
@@ -109,26 +103,26 @@ class Controller_Movimentacao:
                     set quantidade = {quantidade},
                         motivo = '{motivo}',
                         numero_nota = '{numero_nota}'
-                    where codigo = {codigo_movimentacao}""")
+                    where codigo_movimentacao = {codigo_movimentacao}""")
                     
         # Ajusta o estoque conforme o tipo de movimentação
         if tipo_movimentacao == 'E':
             # Entrada - subtrai quantidade antiga e soma nova quantidade
             oracle.write(f"""update produtos set 
                         quantidade_atual = quantidade_atual - {quantidade_antiga} + {quantidade}
-                        where codigo = {codigo_produto}""")
+                        where codigo_produto = {codigo_produto}""")
         else:
             # Saída - soma quantidade antiga e subtrai nova quantidade  
             oracle.write(f"""update produtos set
                         quantidade_atual = quantidade_atual + {quantidade_antiga} - {quantidade}
-                        where codigo = {codigo_produto}""")
+                        where codigo_produto = {codigo_produto}""")
                         
         # Recupera os dados atualizados
-        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo = {codigo_movimentacao}")
+        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo_movimentacao = {codigo_movimentacao}")
         
         # Cria e retorna o objeto Movimentacao atualizado
         movimentacao_atualizada = Movimentacao(
-            df_movimentacao.codigo.values[0],
+            df_movimentacao.codigo_movimentacao.values[0],
             df_movimentacao.codigo_produto.values[0],
             df_movimentacao.tipo_movimentacao.values[0],
             df_movimentacao.quantidade.values[0],
@@ -147,26 +141,26 @@ class Controller_Movimentacao:
         oracle.connect()
 
         # Gera novo código de movimentação
-        codigo = oracle.sqlToDataFrame("select nvl(max(codigo), 0) + 1 as codigo from movimentacoes")["codigo"].values[0]
+        codigo = oracle.sqlToDataFrame("select nvl(max(codigo_movimentacao), 0) + 1 as codigo from movimentacoes")["codigo"].values[0]
         
         # Lista produtos disponíveis
         print("\nProdutos disponíveis:")
         df_produtos = oracle.sqlToDataFrame("""
-            select p.codigo, p.descricao_produto, p.quantidade_atual, 
+            select p.codigo_produto, p.descricao_produto, p.quantidade_atual, 
                    c.nome_categoria, l.nome_localizacao
             from produtos p
-            join categorias c on p.codigo_categoria = c.codigo
-            join localizacoes l on p.codigo_localizacao = l.codigo
+            join categorias c on p.codigo_categoria = c.codigo_categoria  
+            join localizacoes l on p.codigo_localizacao = l.codigo_localizacao
             where p.quantidade_atual > 0
-            order by p.codigo""")
+            order by p.codigo_produto""")
         print(df_produtos)
         
         codigo_produto = int(input("\nCódigo do Produto: "))
         
         # Verifica se o produto existe
         df_produto = oracle.sqlToDataFrame(f"""
-            select codigo, descricao_produto, quantidade_atual, quantidade_minima 
-            from produtos where codigo = {codigo_produto}""")
+            select codigo_produto, descricao_produto, quantidade_atual, quantidade_minima 
+            from produtos where codigo_produto = {codigo_produto}""")
             
         if df_produto.empty:
             print("Produto não encontrado!")
@@ -189,13 +183,13 @@ class Controller_Movimentacao:
                 
         # Lista fornecedores disponíveis para devolução
         print("\nFornecedores disponíveis:")
-        df_fornecedores = oracle.sqlToDataFrame("select cnpj, razao_social from fornecedores order by razao_social")
+        df_fornecedores = oracle.sqlToDataFrame("select cnpj_fornecedor, razao_social from fornecedores order by razao_social")
         print(df_fornecedores)
         
         cnpj_fornecedor = input("\nCNPJ do Fornecedor: ")
         
         # Verifica se o fornecedor existe
-        if oracle.sqlToDataFrame(f"select 1 from fornecedores where cnpj = '{cnpj_fornecedor}'").empty:
+        if oracle.sqlToDataFrame(f"select 1 from fornecedores where cnpj_fornecedor = '{cnpj_fornecedor}'").empty:
             print("Fornecedor não encontrado!")
             return None
                 
@@ -212,14 +206,14 @@ class Controller_Movimentacao:
         oracle.write(f"""update produtos set 
                     quantidade_atual = quantidade_atual - {quantidade},
                     data_ultima_movimentacao = TO_DATE('{datetime.now().strftime("%d/%m/%Y")}', 'DD/MM/YYYY')
-                    where codigo = {codigo_produto}""")
+                    where codigo_produto = {codigo_produto}""")
                     
         # Recupera os dados da movimentação
-        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo = {codigo}")
+        df_movimentacao = oracle.sqlToDataFrame(f"select * from movimentacoes where codigo_movimentacao = {codigo}")
         
         # Cria e retorna o objeto Movimentacao 
         nova_movimentacao = Movimentacao(
-            df_movimentacao.codigo.values[0],
+            df_movimentacao.codigo_movimentacao.values[0],
             df_movimentacao.codigo_produto.values[0],
             df_movimentacao.tipo_movimentacao.values[0],
             df_movimentacao.quantidade.values[0],

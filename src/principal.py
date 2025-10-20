@@ -46,16 +46,19 @@ def atualizar(opcao_atualizar:int=0):
         relatorio.get_relatorio_produtos()
         produto_atualizado = ctrl_produto.atualizar_produto()
     elif opcao_atualizar == 2:
-        relatorio.get_relatorio_categorias()
+        print("\nCategorias disponíveis:")
+        relatorio.get_relatorio_produtos_por_categoria()
         categoria_atualizada = ctrl_categoria.atualizar_categoria()
     elif opcao_atualizar == 3:
         relatorio.get_relatorio_fornecedores()
         fornecedor_atualizado = ctrl_fornecedor.atualizar_fornecedor()
     elif opcao_atualizar == 4:
-        relatorio.get_relatorio_localizacoes()
+        print("\nLocalizações no relatório de produtos:")
+        relatorio.get_relatorio_produtos()
         localizacao_atualizada = ctrl_localizacao.atualizar_localizacao()
     elif opcao_atualizar == 5:
-        relatorio.get_relatorio_movimentacoes()
+        print("\nMovimentações por período:")
+        relatorio.get_relatorio_movimentacoes_periodo()
         movimentacao_atualizada = ctrl_movimentacao.atualizar_movimentacao()
 
 def excluir(opcao_excluir:int=0):
@@ -63,16 +66,19 @@ def excluir(opcao_excluir:int=0):
         relatorio.get_relatorio_produtos()
         ctrl_produto.excluir_produto()
     elif opcao_excluir == 2:                
-        relatorio.get_relatorio_categorias()
+        print("\nCategorias disponíveis:")
+        relatorio.get_relatorio_produtos_por_categoria()
         ctrl_categoria.excluir_categoria()
     elif opcao_excluir == 3:                
         relatorio.get_relatorio_fornecedores()
         ctrl_fornecedor.excluir_fornecedor()
     elif opcao_excluir == 4:                
-        relatorio.get_relatorio_localizacoes()
+        print("\nLocalizações no relatório de produtos:")
+        relatorio.get_relatorio_produtos()
         ctrl_localizacao.excluir_localizacao()
     elif opcao_excluir == 5:
-        relatorio.get_relatorio_movimentacoes()
+        print("\nMovimentações por período:")
+        relatorio.get_relatorio_movimentacoes_periodo()
         ctrl_movimentacao.excluir_movimentacao()
 
 def movimentar_estoque():
