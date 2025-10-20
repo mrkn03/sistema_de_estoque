@@ -27,9 +27,36 @@ def generate_records(query:str, sep:str=';'):
             oracle.write(command)
             print("Successfully executed")
 
+def drop_tables():
+    oracle = OracleQueries(can_write=True)
+    oracle.connect()
+    
+    tables = ["MOVIMENTACOES", "PRODUTOS", "CATEGORIAS", "LOCALIZACOES", "FORNECEDORES"]
+    
+    for table in tables:
+        try:
+            oracle.executeDDL(f"DROP TABLE LABDATABASE.{table}")
+            print(f"Tabela {table} removida com sucesso!")
+        except Exception as e:
+            if "ORA-00942" in str(e):  # Tabela não existe
+                print(f"Tabela {table} não existia.")
+            else:
+                print(f"Erro ao remover tabela {table}: {str(e)}")
+
 def run():
+    # Remover tabelas existentes
+    print("Removendo tabelas existentes...")
+    drop_tables()
+    print("Processo de remoção concluído!")
+    
     # Criar tabelas
     print("Criando tabelas...")
+    
+    # Criar tabela de Fornecedores (deve ser primeira pois outras dependem dela)
+    with open("../sql/create_tables_fornecedores.sql") as f:
+        query_create = f.read()
+        create_tables(query=query_create)
+    print("Tabela de Fornecedores criada!")
     
     # Criar tabela de Categorias
     with open("../sql/create_tables_categorias.sql") as f:
